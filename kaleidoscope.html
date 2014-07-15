@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <script src="js/lib/vendor/jquery-2.1.0.min.js"></script>
+	<style>
+        body {
+            background: #333;
+        }
+
+		.b-kaleidoscope {
+			position: absolute;
+			left: 40px; top: 40px;
+			/*outline: 1px solid #deb887;*/
+		}
+	</style>
+	<script>
+        var requestAnimFrame = (function(){
+            return window.requestAnimationFrame || window.webkitRequestAnimationFrame || function(callback, element) { window.setTimeout(callback, 1000/60); };
+        })();
+
+        var Mosaic = function(){
+            var r = 100;
+            var img;
+            var mosaicAngle = 0;
+
+            var fragment, pattern;
+
+
+            var MosaicFragment = function(){
+
+                var canvas = document.createElement("canvas")/*$(".js-triangle").get(0)*/;
+                var ctx = canvas.getContext("2d");
+
+                var width = r,
+                        height = Math.sqrt(3) * r / 2,
+                        gap = 0.7; // Зазор для совмещении фигур без прозрачных пикселей, 0 - 1
+
+                canvas.width = width;
+                canvas.height = Math.ceil(height);
+
+                this.getImage = function(){
+                    ctx.save();
+                    ctx.translate(width / 2, height / 2); // 2/3 высоты - центр треугольника
+                    ctx.rotate(mosaicAngle);
+                    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                    ctx.restore();
+
+                    ctx.save();
+                    ctx.globalCompositeOperation = "destination-atop";
+                    ctx.beginPath();
+                    ctx.lineTo(- gap, height + gap);
+                    ctx.lineTo(width / 2, - gap);
+                    ctx.lineTo(width + gap, height + gap);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+
+                    return canvas;
+                };
+
+            };
+
+            var MosaicPattern = function(){
+                var canvas = document.createElement("canvas")/*$(".js-triangle-pattern").get(0)*/;
+                var ctx = canvas.getContext("2d");
+
+                var width = r;
+                var height = Math.sqrt(3) * r / 2;
+
+                canvas.width = width * 3;
+                canvas.height = fragment.getImage().height * 2 - 1; // 1 пискель для удаления запаса
+
+                var rotates = [ 2 / 3, 0, 4 / 3 ];
+
+                var _width, _height;
+
+                this.getImage = function(){
+
+                    ctx.save();
+                    ctx.translate(-50, 0);
+
+                    for (var i = 0; i < 2; i ++){
+                        for (var j = 0; j < 7; j ++){
+
+                            _width = width * (j + 1) / 2;
+
+                            ctx.save();
+
+                            if (i % 2 == 0){
+
+                                if (j % 2 == 0){
+                                    _height = height * (i + 1 / 3);
+                                    ctx.transform(1, 0, 0, -1, _width, _height);
+                                } else {
+                                    _height = height * (i + 2 / 3);
+                                    ctx.transform(1, 0, 0, 1, _width, _height);
+                                }
+
+                            } else {
+
+                                if (j % 2 == 0){
+                                    _height = height * (i + 2 / 3);
+                                    ctx.transform(1, 0, 0, 1, _width, _height);
+                                } else {
+                                    _height = height * (i + 1 / 3);
+                                    ctx.transform(1, 0, 0, -1, _width, _height);
+                                }
+                            }
+
+                            ctx.rotate(Math.PI * rotates[ j % rotates.length ]);
+                            ctx.drawImage(fragment.getImage(), - width / 2, - height * 2 / 3);
+                            ctx.restore();
+                        }
+                    }
+
+                    ctx.restore();
+
+                    return canvas;
+                }
+
+            };
+
+            var canvas = $(".js-kaleidoscope").get(0);
+            var ctx = canvas.getContext("2d");
+
+            img = new Image();
+            img.onload = function(){
+
+                fragment = new MosaicFragment();
+                pattern = new MosaicPattern();
+
+                var imgWidth = $(this)[0].width;
+                var imgHeight = $(this)[0].height;
+
+                var x = 0, y = 0;
+
+                var grd = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.height / 2);
+                grd.addColorStop(0, "transparent");
+                grd.addColorStop(.7, "rgba(0, 0, 0, .7)");
+                grd.addColorStop(1, "rgba(0, 0, 0, .85)");
+
+                function draw(){
+                    mosaicAngle -= .01;
+
+                    ctx.fillStyle = ctx.createPattern(pattern.getImage(), "repeat");
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = grd;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    requestAnimFrame(draw);
+                }
+
+                draw();
+
+            };
+
+            img.src = "http://www.puzzleit.ru/files/puzzles/17/16734/_preview.jpg" || "ornament.png";
+        };
+
+		$(function(){
+           var mosaic = new Mosaic();
+		});
+	</script>
+</head>
+<body>
+
+	<canvas width="1024" height="768" class="b-kaleidoscope js-kaleidoscope"></canvas>
+
+	<!--<canvas class="js-triangle" style="position: absolute; left: 600px; top: 100px; border: 1px solid red"></canvas>
+	<canvas class="js-triangle-pattern" style="position: absolute; left: 600px; top: 300px; border: 1px solid red"></canvas>-->
+
+</body>
+</html>

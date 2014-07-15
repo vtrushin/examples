@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!--<link rel="stylesheet" href="css/base.css" />-->
+	<script src="js/lib/vendor/jquery-2.1.0.min.js"></script>
+	<script src="js/lib/vendor/greensock/plugins/CSSPlugin.js"></script>
+	<script src="js/lib/vendor/greensock/plugins/BezierPlugin.js"></script>
+	<script src="js/lib/vendor/greensock/easing/EasePack.js"></script>
+	<script src="js/lib/vendor/greensock/TweenLite.js"></script>
+	<script src="js/lib/vendor/greensock/TimelineLite.js"></script>
+	<script src="js/amphoraeVaporShapes.js"></script>
+	<style>
+		.g-hidden {
+			display: none !important;
+		}
+
+		.b-descrs {
+			position: absolute;
+			left: 132px; top: 115px;
+			width: 770px;
+			}	.b-descrs > div {
+					position: absolute;
+					left: 0; top: 0; right: 0;
+		}
+	</style>
+</head>
+<body>
+	<div class="b-page js-page">
+
+		<canvas width="1024" height="768" style="position: absolute; left: 0; top: 0;"></canvas>
+
+		<div class="b-descrs js-descrs">
+			<div style="opacity: 0">
+				<div style="font: 24px PTSans; margin-bottom: 15px">Заголовок 1</div>
+				<div class="p-default-text" style="height: 140px">
+					Текст 1
+				</div>
+			</div>
+			<div style="opacity: 0">
+				<div style="font: 24px PTSans; margin-bottom: 15px">Заголовок 2</div>
+				<div class="p-default-text" style="height: 140px">
+					Текст 2
+				</div>
+			</div>
+			<div style="opacity: 0">
+				<div style="font: 24px PTSans; margin-bottom: 15px">Заголовок 3</div>
+				<div class="p-default-text" style="height: 140px">
+					Текст 3
+				</div>
+			</div>
+			<div style="opacity: 0">
+				<div style="font: 24px PTSans; margin-bottom: 15px">Заголовок 4</div>
+				<div class="p-default-text" style="height: 140px">
+					Текст 4
+				</div>
+			</div>
+		</div>
+
+		<div class="js-hint p-default-hint" style="position: absolute; left: 500px; top: 377px; width: 100px;">
+			Коснитесь флакончика
+		</div>
+
+		<button class="b-system-button js-sys-btn-menu _menu"></button>
+		<button class="b-system-button js-sys-btn-settings _settings"></button>
+		<button class="b-system-button js-sys-btn-next-page _next-page"></button>
+		<button class="b-system-button js-sys-btn-prev-page _prev-page"></button>
+
+	</div>
+
+	<script>
+		$(function(){
+
+			TweenLite.defaultEase = Linear.easeNone;
+
+			var amphorae = [
+				{
+					bottle: {
+						x: 56, y: 447
+					},
+					cover: {
+						img: "imgs/amphora-cover1.png",
+						dims: { w: 64, h: 90 },
+						pos: { x: 135, y: 420, rotate: 0 },
+						trace: [
+							{ x: 205, y: 350, rotate: .3 },
+							{ x: 241, y: 700, rotate: 1 }
+						]
+					},
+					vapor: {
+						color: "rgba(35, 173, 173, .4)",
+						pos: [].concat(amphora1Shapes[0]),
+						trace: amphora1Shapes
+					},
+					area: { l: 40, t: 370, w: 200, h: 370 }
+				},
+				{
+					bottle: {
+						x: 313, y: 499
+					},
+					cover: {
+						img: "imgs/amphora-cover2.png",
+						dims: { w: 62, h: 104 },
+						pos: { x: 397, y: 480, rotate: 0 },
+						trace: [
+							{ x: 482, y: 412, rotate: .3 },
+							{ x: 535, y: 703, rotate: 1 }
+						]
+					},
+					vapor: {
+						color: "rgba(149, 237, 31, .4)",
+						pos: [].concat(amphora2Shapes[0]),
+						trace: amphora2Shapes
+					},
+					area: { l: 300, t: 410, w: 215, h: 330 }
+				},
+				{
+					bottle: {
+						x: 606, y: 395
+					},
+					cover: {
+						img: "imgs/amphora-cover3.png",
+						dims: { w: 68, h: 94 },
+						pos: { x: 670, y: 420, rotate: 0 },
+						trace: [
+							{ x: 766, y: 331, rotate: .3 },
+							{ x: 791, y: 714, rotate: 1 }
+						]
+					},
+					vapor: {
+						color: "rgba(213, 103, 71, .4)",
+						pos: [].concat(amphora3Shapes[0]),
+						trace: amphora3Shapes
+					},
+					area: { l: 584, t: 360, w: 180, h: 375 }
+				},
+				{
+					bottle: {
+						x: 857, y: 382
+					},
+					cover: {
+						img: "imgs/amphora-cover4.png",
+						dims: { w: 58, h: 129 },
+						pos: { x: 908, y: 350, rotate: 0 },
+						trace: [
+							{ x: 837, y: 337, rotate: .3 },
+							{ x: 791, y: 714, rotate: 1 }
+						]
+					},
+					vapor: {
+						color: "rgba(255, 205, 10, .4)",
+						pos: [].concat(amphora4Shapes[0]),
+						trace: amphora4Shapes
+					},
+					area: { l: 836, t: 280, w: 165, h: 450 }
+				}
+			];
+
+			var resources = {
+				table: "imgs/table-with-bottles.jpg",
+				amphoraCover1: "imgs/amphora-cover1.png",
+				amphoraCover2: "imgs/amphora-cover2.png",
+				amphoraCover3: "imgs/amphora-cover3.png",
+				amphoraCover4: "imgs/amphora-cover4.png"
+			};
+
+			var loadImgs = function(resources, callback) {
+				var loadedCount = 0;
+				var imgs = {};
+
+				$.each(resources, function(key, src){
+					var img = new Image();
+					img.onload = function(){
+						imgs[key] = img;
+						if (loadedCount == Object.keys(resources).length - 1){
+							callback(imgs);
+							return;
+						}
+						loadedCount ++;
+					};
+					img.src = src;
+				});
+			};
+
+			var canvas = $("canvas").get(0);
+			var ctx = canvas.getContext("2d");
+
+			loadImgs(resources, function(imgs){
+
+				function draw(){
+					ctx.drawImage(imgs.table, 0, 0);
+
+					for (var i = 0; i < amphorae.length; i ++){
+						var amphora = amphorae[i];
+
+						// Крышки
+						var cover = new Image();
+						cover.src = amphora.cover.img;
+						ctx.save();
+						ctx.translate(amphora.cover.pos.x, amphora.cover.pos.y);
+						ctx.rotate(amphora.cover.pos.rotate);
+						ctx.drawImage(cover, - amphora.cover.dims.w / 2, - amphora.cover.dims.h / 2);
+						ctx.restore();
+
+						// Облачко
+						ctx.save();
+						ctx.globalCompositeOperation = "darker";
+						ctx.beginPath();
+						ctx.moveTo(amphora.vapor.pos[0], amphora.vapor.pos[1]);
+						for (var j = 2; j < amphora.vapor.trace[0].length; j += 6){
+							var coords = amphora.vapor.pos;
+							ctx.bezierCurveTo(coords[j], coords[j + 1], coords[j + 2], coords[j + 3], coords[j + 4], coords[j + 5]);
+						}
+						ctx.closePath();
+						ctx.fillStyle = amphora.vapor.color;
+						ctx.fill();
+						ctx.restore();
+					}
+				}
+
+				var tweens = [];
+
+				for (var j = 0; j < amphorae.length; j++){
+					var amphora = amphorae[j];
+
+					var tl = new TimelineLite({
+						onUpdate: draw
+					});
+
+					for (var i = 1; i < amphora.vapor.trace.length - 1; i++){
+						tl.append( TweenLite.to(amphora.vapor.pos, .3, amphora.vapor.trace[i + 1]) );
+					}
+
+					var values = [];
+					for (var k = 0; k < amphora.cover.trace.length; k++){
+						values.push(amphora.cover.trace[k]);
+					}
+					tl.insert(TweenLite.to(amphora.cover.pos, .8, {
+						bezier: {
+							values: values
+						}
+					}));
+
+					tl.pause();
+					tweens.push(tl);
+				}
+
+				var last;
+				var $descrs = $(".js-descrs > div");
+
+				function openAmphora(amphoraNum){
+					if (last == amphoraNum){
+						return;
+					}
+					tweens[amphoraNum].play();
+					$descrs.eq(amphoraNum).animate({
+						opacity: 1
+					}, 2200);
+					if (last != undefined && last != null){
+						tweens[last].reverse();
+						$descrs.eq(last).animate({
+							opacity: 0
+						}, 500);
+					}
+					last = amphoraNum;
+				}
+
+				draw();
+
+				var $hint = $(".js-hint");
+
+				$(canvas).on("click", function(e){
+					for (var i = 0; i < amphorae.length; i ++){
+						var area = amphorae[i].area;
+						var x = e.pageX,
+							y = e.pageY;
+						if ( x >= area.l && x <= (area.l + area.w) && y >= area.t && y <= (area.t + area.h) ){
+							if (!$hint.hasClass("g-hidden")){
+								$hint.addClass("g-hidden");
+							}
+							openAmphora(i);
+							break;
+						}
+					}
+				});
+
+				openAmphora(0);
+
+			});
+
+		});
+	</script>
+
+</body>
+</html>

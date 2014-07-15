@@ -1,0 +1,16 @@
+.b-list-with-snap-item {
+  background-color: #262a2d;
+  position: relative;
+  overflow: auto; }
+  .b-list-with-snap-item > a {
+    display: block;
+    border-bottom: 1px solid #3c4043;
+    font: 300 16px Roboto;
+    color: #bfc6c8;
+    padding: 21px 21px 22px; }
+    .b-list-with-snap-item > a.active {
+      background-color: #1b1d1f;
+      color: #ff4a1d; }
+    .b-list-with-snap-item > a.offset {
+      border-bottom: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }

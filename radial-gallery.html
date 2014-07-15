@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=1024, height=768, initial-scale=1, user-scalable=no"/>
+	<style>
+		.gallery {
+			width: 1000px; height: 600px;
+			position: relative;
+			outline: 1px dotted #999;
+		}
+
+		.gallery div {
+			position: absolute;
+
+			width: 200px; height: 200px;
+			box-sizing: border-box;
+			border: 2px solid rgba(0, 0, 0, .2);
+			/*-webkit-transition: all .3s;*/
+			display: -webkit-box; display: -webkit-flex; display: -ms-flexbox; display: flex;
+			-webkit-box-pack: center; -webkit-justify-content: vertical; -ms-flex-pack: center; justify-content: center;
+			-webkit-box-align: center; -webkit-align-items: center; -ms-flex-align: center; align-items: center;
+			background-color: cadetblue;
+
+		}
+
+		.gallery .b1 {
+			background-color: aquamarine;
+		}
+
+		.gallery .b2 {
+			background-color: burlywood;
+		}
+
+		.gallery .b3 {
+			background-color: coral;
+		}
+		.gallery .b4 {
+			background-color: steelblue;
+		}
+
+		.gallery .b5 {
+			background-color: yellowgreen;
+		}
+
+		.gallery .b6 {
+			background-color: lightsteelblue;
+		}
+
+		.gallery .b7 {
+			background-color: hotpink;
+		}
+	</style>
+	<script>
+		var events;
+		if ("ontouchstart" in window) {
+			events = {
+				tap: "tap",
+				touchstart: "touchstart",
+				touchmove: "touchmove",
+				touchend: "touchend"
+			};
+		} else {
+			events = {
+				tap: "click",
+				touchstart: "mousedown",
+				touchmove: "mousemove",
+				touchend: "mouseup"
+			};
+		}
+	</script>
+</head>
+<body>
+
+	<div class="gallery js-gallery">
+		<div class="b1">1</div>
+		<div class="b2">2</div>
+		<div class="b3">3</div>
+		<div class="b4">4</div>
+		<div class="b5">5</div>
+		<div class="b6">6</div>
+	</div>
+
+	<div style="padding: 10px;">
+		<button class="js-prev">Предыдущий</button>
+		<button class="js-next">Следующий</button>
+		<button class="js-goto4">Перейти на 4 слайд</button>
+	</div>
+
+	<script>
+		var Gallery = function(oCover, radius, perspective){
+			this._slides = oCover.children;
+			this._SLIDE_WIDTH = this._slides[0].offsetWidth;
+			this._SLIDE_HEIGHT = this._slides[0].offsetHeight;
+			this._SLIDES_COUNT = this._slides.length;
+			this._DELTA_ANGLES = (Math.PI * 2) / this._SLIDES_COUNT;
+			this._RADIUS = radius || 100;
+			this._PERSPECTIVE = perspective || 1;
+
+			this._angle = 0;
+			this._curSlideIndex = 0;
+
+			/* Смещенный угол ноля */
+			this._ZERO_ANGLE = Math.PI / 2;
+			this._DIRECTION = -1; // 1; -1
+
+			this._offsetX = oCover.offsetLeft;
+			this._offsetY = oCover.offsetTop;
+
+			this._height = oCover.offsetHeight;
+
+			this._centerX = oCover.offsetWidth / 2;
+			this._centerY = oCover.offsetHeight / 2;
+
+			this._absCenterX = this._centerX + this._offsetX;
+			this._absCenterY = this._centerY + this._offsetY;
+
+
+			oCover.addEventListener(events.touchstart, function(e){
+				if (Array.prototype.slice.call(this._slides).indexOf(e.target) == -1) return;
+				e.preventDefault();
+				var angle = this._angle;
+				var x = (e.pageX - this._absCenterX) * this._PERSPECTIVE;
+				var y = -(e.pageY - this._absCenterY);
+				var touchAngle = Math.atan2(x, y);
+
+				var move = function(e){
+					e.preventDefault();
+					x = (e.pageX - (this._centerX + this._offsetX)) * this._PERSPECTIVE;
+					y = -(e.pageY - (this._centerY + this._offsetY));
+					this._angle = Math.atan2(x, y) + angle - touchAngle;
+					this._draw();
+				}.bind(this);
+
+				var up = function(){
+					this._angle = this._utils.normalizeAngle(this._angle);
+					this._scrollToNearestSlide();
+					document.body.removeEventListener(events.touchmove, move);
+					document.body.removeEventListener(events.touchend, up);
+				}.bind(this);
+
+				document.body.addEventListener(events.touchmove, move);
+				document.body.addEventListener(events.touchend, up);
+
+			}.bind(this));
+
+			this._draw();
+		};
+
+		/** @public */
+		Gallery.prototype.setSlide = function(index){
+
+			if ((typeof(index)).toLowerCase() == "string"){
+				var direction = index.charAt(0);
+				var val = Number(index.substring(1));
+				switch (direction){
+					case "+": index = this._curSlideIndex + val; break;
+					case "-": index = this._curSlideIndex - val; break;
+					default: throw new Error("Incorrect format");
+				}
+			}
+
+			index = index % this._SLIDES_COUNT;
+			var prevAngle = this._angle;
+			var angle = index * (Math.PI * 2) / this._SLIDES_COUNT;
+
+			if (angle == prevAngle){
+				return;
+			}
+
+			var onEach = function(val){
+				this._angle = val;
+				this._draw();
+			}.bind(this);
+
+			var onEnd = function(){
+				this._curSlideIndex = index;
+			}.bind(this);
+
+			prevAngle = this._utils.normalizeAngle(prevAngle);
+			angle = this._utils.normalizeAngle(angle);
+
+			angle = this._utils.getNearestAngleOffset(prevAngle, angle) + prevAngle;
+			animateNumber(prevAngle, angle, 100, onEach, onEnd);
+		};
+
+
+		/** @private */
+		Gallery.prototype._draw = function(){
+			for (var i = 0, x, y, angle, slide; i < this._SLIDES_COUNT; i ++){
+				angle = this._DELTA_ANGLES * i * this._DIRECTION + this._angle + this._ZERO_ANGLE;
+
+				/*if (_angle >= Math.PI * 2 - this._DELTA_ANGLES / 2 || _angle <= this._DELTA_ANGLES / 2){
+					console.log(i);
+				}*/
+
+				x = this._RADIUS * Math.cos(angle) + this._centerX - this._SLIDE_WIDTH / 2;
+				y = this._RADIUS * Math.sin(angle) * this._PERSPECTIVE + this._centerY - this._SLIDE_HEIGHT / 2;
+
+				//var a = 1 / (1 - (y - this._centerY) / this._height);
+
+				slide = this._slides[i];
+				slide.style.left = x + "px";
+				slide.style.top = y + "px";
+				slide.style.zIndex = Math.round(y);
+				//slide.style.webkitTransform = "scale(" + a + ")";
+			}
+		};
+
+		/** @private */
+		Gallery.prototype._scrollToNearestSlide = function(){
+			var nearPointIndex;
+
+			console.log(this._angle);
+
+			for (var slideIndex = 0, slideAngle; slideIndex < this._SLIDES_COUNT; slideIndex ++){
+				slideAngle = slideIndex * this._DELTA_ANGLES * -this._DIRECTION;
+				if (this._utils.getRadialDistance(this._angle, slideAngle) < this._DELTA_ANGLES / 2){
+					nearPointIndex = slideIndex;
+					break;
+				}
+			}
+
+			console.log(nearPointIndex);
+
+			this.setSlide(nearPointIndex);
+		};
+
+		/** @private */
+		Gallery.prototype._performInertion = function(){};
+
+		/*Gallery.prototype._animate = function(newStartAngle){
+			var that = this;
+			var direction;
+			console.log(this._startAngle, newStartAngle);
+
+			(function draw(){
+				if (!direction){
+					direction = that._startAngle < newStartAngle ? -1 : 1;
+					console.log(direction);
+				}
+				that._startAngle += (newStartAngle - that._startAngle) / 100;
+				setTimeout(draw, 1000 / 60);
+			})();
+		};*/
+
+		/** @private */
+		Gallery.prototype._utils = (function(){
+			var utils = {
+				/** Return normalized offset angle to full-circle value */
+				normalizeAngle: function(angle){
+					if (angle == undefined || typeof(angle) !== "number"){
+						throw new Error("Incorrect angle format or angle is not defined");
+					}
+					var fullCircle = Math.PI * 2;
+					return (angle % fullCircle + fullCircle) % fullCircle
+				},
+
+				testForCorrectAngle: function(angle){
+					if (angle === undefined){
+						throw new Error("Angle is not defined");
+					}
+					return (typeof(angle) === "number" && angle >= 0 && angle <= Math.PI * 2);
+				},
+
+				getNearestAngleOffset: function(angle1, angle2){
+					var fullCircle = Math.PI * 2;
+					if (angle1 === undefined || angle2 === undefined || !utils.testForCorrectAngle(angle1) || !utils.testForCorrectAngle(angle2)){
+						throw new Error("Incorrect angles format or angles are not defined. Must be in range [0; Math.PI * 2]");
+					}
+					var forward = angle2 - angle1;
+					var backward = (forward > 0) ? forward - fullCircle : forward + fullCircle;
+					return (Math.abs(forward) < Math.abs(backward)) ? forward : backward;
+				},
+
+				getRadialDistance: function(angle1, angle2){
+					var fullCircle = Math.PI * 2;
+					if (angle1 === undefined || angle2 === undefined || !utils.testForCorrectAngle(angle1) || !utils.testForCorrectAngle(angle2)){
+						throw new Error("Incorrect angles format or angles are not defined. Must be in range [0; Math.PI * 2]");
+					}
+					var inner = Math.abs(angle1 - angle2);
+					var outer = fullCircle - inner;
+					return Math.min(inner, outer);
+				}
+			};
+
+			return utils;
+		})();
+
+		var gallery;
+
+
+		var ticker = (function(){
+			return {
+				onTick: function(fn){
+					setTimeout(fn, 1000 / 60);
+				}
+			}
+		})();
+
+		function animateNumber(from, to, duration, eachCallback, endCallback){
+			if (from === to || duration === 0){
+				if (eachCallback) eachCallback(to);
+				if (endCallback) endCallback();
+				return;
+			}
+			var startTime = new Date().getTime();
+			(function nextFrame(){
+				var spentTime = new Date().getTime() - startTime;
+				var progress = Math.min(spentTime / duration, 1);
+				var val = from + progress * (to - from);
+				if (eachCallback) eachCallback(val);
+				if (spentTime < duration){
+					ticker.onTick(nextFrame);
+				} else {
+					if (endCallback) endCallback();
+				}
+			})();
+		}
+
+		/*var easings = {
+			easeInQuad: function (t, b, c, d) {
+				return c * (t /= d) * t + b;
+			},
+			easeOutBounce: function (t, b, c, d) {
+				if ((t /= d) < (1 / 2.75)) {
+					return c * (7.5625 * t * t) + b;
+				} else if (t < (2 / 2.75)) {
+					return c * (7.5625 * (t -= (1.5 / 2.75)) * t + .75) + b;
+				} else if (t < (2.5 / 2.75)) {
+					return c * (7.5625 * (t -= (2.25 / 2.75)) * t + .9375) + b;
+				} else {
+					return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
+				}
+			}
+		};*/
+
+		document.addEventListener("DOMContentLoaded", function(){
+			gallery = new Gallery(document.querySelector(".js-gallery"), 500, .5);
+			console.log(gallery);
+
+			document.querySelector(".js-prev").addEventListener("click", function(){
+				gallery.setSlide("-1");
+			});
+
+			document.querySelector(".js-next").addEventListener("click", function(){
+				gallery.setSlide("+1");
+			});
+
+			document.querySelector(".js-goto4").addEventListener("click", function(){
+				gallery.setSlide(3);
+			});
+
+		});
+
+	</script>
+
+</body>
+</html>

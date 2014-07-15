@@ -1,0 +1,47 @@
+.b-cover-gallery {
+  outline: 1px solid red;
+  position: relative; }
+
+.b-cover-gallery__scroll {
+  white-space: nowrap;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse; }
+
+.b-cover-gallery__scroll__obj {
+  overflow: auto;
+  box-sizing: border-box;
+  font-size: 0; }
+  .b-cover-gallery__scroll__obj div {
+    display: inline-block;
+    font-size: 1rem;
+    white-space: normal;
+    width: 100px;
+    height: 100px;
+    border: 5px solid #cccccc; }
+    .b-cover-gallery__scroll__obj div:first-child {
+      margin-left: 50px; }
+    .b-cover-gallery__scroll__obj div:last-child {
+      margin-right: 50px; }
+    .b-cover-gallery__scroll__obj div:not(:last-child) {
+      margin-right: 20px; }
+
+.b-cover-gallery__btn-prev,
+.b-cover-gallery__btn-next {
+  position: absolute;
+  top: 50%;
+  width: 50px;
+  height: 100px;
+  margin-top: -50px;
+  opacity: 0.5; }
+
+.b-cover-gallery__btn-prev:disabled,
+.b-cover-gallery__btn-next:disabled {
+  opacity: 0.2; }
+
+.b-cover-gallery__btn-prev {
+  left: 0; }
+
+.b-cover-gallery__btn-next {
+  right: 0; }

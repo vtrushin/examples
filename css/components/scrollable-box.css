@@ -1,0 +1,38 @@
+.b-scrollable-box {
+  outline: 1px solid red;
+  position: relative; }
+  .b-scrollable-box .b-scrollable-box__scroll {
+    white-space: nowrap;
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse; }
+  .b-scrollable-box .b-scrollable-box__scroll__obj {
+    overflow: hidden;
+    box-sizing: border-box;
+    font-size: 0; }
+    .b-scrollable-box .b-scrollable-box__scroll__obj div {
+      display: inline-block;
+      font-size: 1rem;
+      white-space: normal;
+      width: 100px;
+      height: 100px;
+      border: 5px solid #cccccc;
+      vertical-align: top; }
+      .b-scrollable-box .b-scrollable-box__scroll__obj div:not(:last-child) {
+        margin-right: 20px; }
+  .b-scrollable-box .b-scrollable-box__btn-prev,
+  .b-scrollable-box .b-scrollable-box__btn-next {
+    position: absolute;
+    top: 50%;
+    width: 50px;
+    height: 100px;
+    margin-top: -50px;
+    opacity: 0.5; }
+    .b-scrollable-box .b-scrollable-box__btn-prev:disabled,
+    .b-scrollable-box .b-scrollable-box__btn-next:disabled {
+      opacity: 0.2; }
+  .b-scrollable-box .b-scrollable-box__btn-prev {
+    left: 0; }
+  .b-scrollable-box .b-scrollable-box__btn-next {
+    right: 0; }
